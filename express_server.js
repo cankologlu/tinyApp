@@ -1,6 +1,7 @@
 const express = require("express"); // Importing express library
 const app = express();              // Calling express
 const PORT = 8080;
+app.set("view engine", "ejs");
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
