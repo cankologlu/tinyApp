@@ -5,10 +5,11 @@ app.set("view engine", "ejs");      // Setting ejs as the templating engine
 
 const randomStringGenerator = () => {
   let randomString = "";
-for (let i = 5; i >= 0; i--) {
-  let chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  randomString += chars[Math.floor(Math.random()*61)];
-}return randomString
+  for (let i = 5; i >= 0; i--) {
+    let chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    randomString += chars[Math.floor(Math.random()*61)];
+  }
+  return randomString;
 }
 
 console.log(randomStringGenerator())
@@ -22,7 +23,15 @@ app.use(express.urlencoded({ extended: true }));   // To convert the data in the
 
 app.post("/urls", (req, res) => {
   console.log(req.body);
-  res.send("Ok");
+  const randomId = randomStringGenerator()
+  urlDatabase[randomId] = req.body.longURL;
+  console.log(urlDatabase);
+  res.redirect(`/urls/${randomId}`);
+});
+
+app.get("/u/:id", (req, res) => {
+   const longURL = urlDatabase[req.params.id];
+  res.redirect(longURL);
 });
 
 app.get("/", (req, res) => {
