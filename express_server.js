@@ -34,17 +34,22 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
-app.post("/urls/:id/delete", (req, res) => {
+app.post("/urls/:id/delete", (req, res) => {                  //deleting a url
+  const { id } = req.params
+
+  delete urlDatabase[id];
+  return res.redirect("/urls")
+});
+
+app.post("/urls/:id/", (req, res) => {                  //deleting a url
   console.log(req.params);
-  const {id} = req.params
-  for (let url in urlDatabase) {
-    if(id === url) {
-      delete urlDatabase[id];
-      return res.redirect("/urls")
-    }
-  }
-  res.send("hello world");
-})
+  const id = req.params.id
+  const longUrl = req.body.longURL
+  urlDatabase[id] = longUrl;
+  res.redirect("/urls");
+});
+
+
 
 app.get("/", (req, res) => {
   res.send("<html><body>Welcome to the <i>homepage</i></body></html>\n");
