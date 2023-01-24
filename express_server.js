@@ -7,7 +7,7 @@ const randomStringGenerator = () => {
   let randomString = "";
   for (let i = 5; i >= 0; i--) {
     let chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    randomString += chars[Math.floor(Math.random()*61)];
+    randomString += chars[Math.floor(Math.random() * 61)];
   }
   return randomString;
 }
@@ -25,12 +25,12 @@ app.post("/urls", (req, res) => {
   console.log(req.body);
   const randomId = randomStringGenerator()
   urlDatabase[randomId] = req.body.longURL;
-  console.log(urlDatabase);
+  // console.log(urlDatabase);
   res.redirect(`/urls/${randomId}`);
 });
 
 app.get("/u/:id", (req, res) => {
-   const longURL = urlDatabase[req.params.id];
+  const longURL = urlDatabase[req.params.id];
   res.redirect(longURL);
 });
 
@@ -53,7 +53,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id
-  const templateVars = { id: req.params.id, longURL: urlDatabase[id]};
+  const templateVars = { id: req.params.id, longURL: urlDatabase[id] };
   res.render("urls_show", templateVars);
 });
 
