@@ -12,7 +12,7 @@ const randomStringGenerator = () => {
   return randomString;
 }
 
-console.log(randomStringGenerator())
+// console.log(randomStringGenerator())   //Generator testing
 
 
 const urlDatabase = {
