@@ -41,7 +41,7 @@ app.post("/urls/:id/delete", (req, res) => {                  //deleting a url
   return res.redirect("/urls")
 });
 
-app.post("/urls/:id/", (req, res) => {                  //deleting a url
+app.post("/urls/:id/", (req, res) => {               
   console.log(req.params);
   const id = req.params.id
   const longUrl = req.body.longURL
