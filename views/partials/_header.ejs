@@ -19,11 +19,19 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-        <form method="POST" action="/login %>">
+        <% if (!username) { %>
+          <form method="POST" action="/login">
           <label for="textbox">Name:</label>
           <input type="text" name="username" />
           <input type="submit" value="Login" />
         </form>
+        <% } else { %>
+          <form method="POST" action="/logout">
+            <span><%= username %></span>
+            <input type="submit" value="Logout" />
+          </form>
+
+        <% } %>
       </div>
     </div>
   </nav>
