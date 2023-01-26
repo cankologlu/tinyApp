@@ -94,7 +94,7 @@ app.post("/register", (req, res) => {
   if (req.body.email === "" || req.body.password === "") {
     res.status(400).send(" Email or Password cannot be blank.")
   }
-  for (const id in users) {
+  for (const id in users) {                      
     if(req.body.email === users[id].email) {
       res.status(400).send ("Email already registered.")
     }
@@ -104,6 +104,22 @@ app.post("/register", (req, res) => {
   // console.log(users[randomUserId]);
   res.cookie("user_id", randomUserId)
   return res.redirect(`/urls`);
+});
+
+app.post("/login", (req, res) => {
+
+  for (const id in users) {
+    if (req.body.email === users[id].email) {
+      if (req.body.password === users[id].password) {
+        res.cookie("user_id", id)
+        return res.redirect("/urls");
+      } else {
+        res.status(403).send ("Password is incorrect!");
+      }
+    }
+  }
+  res.status(403).send ("Email adress incorrect!");
+
 });
 
 app.post("/urls/:id/delete", (req, res) => {                  //deleting a url
@@ -120,18 +136,13 @@ app.post("/urls/:id/", (req, res) => {
   res.redirect("/urls");
 });
 
-app.post("/login", (req, res) => {
-  console.log(req.body)
 
-
-  return res.redirect("/urls")
-});
 
 app.post("/logout", (req, res) => {
 
   // console.log(username);
   res.clearCookie("user_id");
-  return res.redirect("/urls")
+  return res.redirect("/login")
 });
 
 
