@@ -2,6 +2,8 @@ const express = require("express"); // Importing express library
 const app = express();              // Calling express
 const PORT = 8080;
 const cookieParser = require("cookie-parser");
+const bcrypt = require("bcryptjs");
+
 // ========================== Functions ======================================
 const randomStringGenerator = () => {
   let randomString = "";
@@ -38,20 +40,20 @@ const urlDatabase = {
   i3BoGr: {
     longURL: "https://www.google.ca",
     userID: "aJ48lW",
-  },
+  }
 };
 
 const users = {
   horses: {
     id: "horses",
     email: "horse@fast.com",
-    password: "1234",
+    password: bcrypt.hashSync("1234", 10)
   },
   cornholio: {
     id: "cornholio",
     email: "cornholio@unreal.com",
-    password: "1234",
-  },
+    password: bcrypt.hashSync("4321", 10)
+  }
 };
 
 // =============================== GET =================================
@@ -135,28 +137,33 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
+  const {email, password} = req.body 
   // console.log(req.body);
-  if (req.body.email === "" || req.body.password === "") {
+  if (email === "" || password === "") {
     res.status(400).send(" Email or Password cannot be blank.")
   }
   for (const id in users) {                      
-    if(req.body.email === users[id].email) {
+    if(email === users[id].email) {
       res.status(400).send ("Email already registered.")
     }
   }
   const randomUserId = randomStringGenerator()
-  users[randomUserId] = { id: randomUserId, email: req.body.email, password: req.body.password }
+  users[randomUserId] = { id: randomUserId, email, password: bcrypt.hashSync(password, 10) }
   // console.log(users[randomUserId]);
   res.cookie("user_id", randomUserId)
   return res.redirect(`/urls`);
 });
 
 app.post("/login", (req, res) => {
-
+  const {email, password} = req.body
+  if(!email || !password) {
+    return res.status(403).send("Please fill email and password")
+  }
   for (const id in users) {
-    if (req.body.email === users[id].email) {
-      if (req.body.password === users[id].password) {
+    if (email === users[id].email) {
+      if (bcrypt.compareSync(password, users[id].password)) {
         res.cookie("user_id", id)
+        console.log("User password is:",users[id].password)
         return res.redirect("/urls");
       } else {
         res.status(403).send ("Password is incorrect!");
