@@ -13,7 +13,9 @@ const randomStringGenerator = () => {
 };
 
 app.set("view engine", "ejs");      // Setting ejs as the templating engine
-app.use(cookieParser());
+
+app.use(cookieParser());            // Reach you cookies faster
+
 app.use(express.urlencoded({ extended: true }));   // To convert the data in the req body to a string. Has to be before any get route so it doesn't miss data
 
 const urlDatabase = {
@@ -21,6 +23,18 @@ const urlDatabase = {
   "9sm5xK": "http://google.com"
 };
 
+const users = {
+  horses: {
+    id: "horses",
+    email: "horse@fast.com",
+    password: "purple-monkey-dinosaur",
+  },
+  cornholio: {
+    id: "cornholio",
+    email: "cornholio@unreal.com",
+    password: "dishwasher-guy",
+  },
+};
 
 // =============================== GET =================================
 app.get("/", (req, res) => {
@@ -29,12 +43,27 @@ app.get("/", (req, res) => {
 
 app.get("/urls", (req, res) => {
   // console.log(req.cookies["username"])
-  const templateVars = { username:req.cookies["username"], urls: urlDatabase };
+  const userId = req.cookies["user_id"]
+  const templateVars = {  user:users[userId], urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
+app.get("/register", (req, res) => {
+  const userId = req.cookies["user_id"]
+  const templateVars = { user:users[userId], urls: urlDatabase };
+  console.log(req.cookies["user_id"])
+  res.render("register", templateVars);
+});
+
+app.get("/login", (req,res) => {
+  const userId = req.cookies["user_id"]
+  const templateVars = { user:users[userId], urls: urlDatabase };
+  res.render("login", templateVars)
+})
+
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username:req.cookies["username"], urls: urlDatabase };
+  const userId = req.cookies["user_id"]
+  const templateVars = { user:users[userId], urls: urlDatabase };
   res.render("urls_new", templateVars);
 });
 
@@ -45,7 +74,8 @@ app.get("/u/:id", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id
-  const templateVars = { username:req.cookies["username"], id: req.params.id, longURL: urlDatabase[id] };
+  const userId = req.cookies["user_id"]
+  const templateVars = { user:users[userId], id: req.params.id, longURL: urlDatabase[id] };
   res.render("urls_show", templateVars);
 });
 
@@ -59,6 +89,22 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${randomId}`);
 });
 
+app.post("/register", (req, res) => {
+  // console.log(req.body);
+  if (req.body.email === "" || req.body.password === "") {
+    res.status(400).send(" Email or Password cannot be blank.")
+  }
+  for (const id in users) {
+    if(req.body.email === users[id].email) {
+      res.status(400).send ("Email already registered.")
+    }
+  }
+  const randomUserId = randomStringGenerator()
+  users[randomUserId] = { id: randomUserId, email: req.body.email, password: req.body.password }
+  // console.log(users[randomUserId]);
+  res.cookie("user_id", randomUserId)
+  return res.redirect(`/urls`);
+});
 
 app.post("/urls/:id/delete", (req, res) => {                  //deleting a url
   const { id } = req.params
@@ -75,16 +121,16 @@ app.post("/urls/:id/", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  const  username  = req.body.username
-  // console.log(username);
-  res.cookie("username", username);
+  console.log(req.body)
+
+
   return res.redirect("/urls")
 });
 
 app.post("/logout", (req, res) => {
 
   // console.log(username);
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   return res.redirect("/urls")
 });
 
