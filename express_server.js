@@ -2,7 +2,7 @@ const express = require("express"); // Importing express library
 const app = express();              // Calling express
 const PORT = 8080;
 const cookieParser = require("cookie-parser");
-
+// ========================== Functions ======================================
 const randomStringGenerator = () => {
   let randomString = "";
   for (let i = 5; i >= 0; i--) {
@@ -12,15 +12,32 @@ const randomStringGenerator = () => {
   return randomString;
 };
 
+const urlsForUser = (ID) => {
+  userUrls = {};
+  for(const id in urlDatabase) {
+    if (urlDatabase[id].userID === ID) {
+      userUrls += urlDatabase[id];
+    };
+  }return userUrls;
+}
+
+// ======================== App library settings ============================
+
 app.set("view engine", "ejs");      // Setting ejs as the templating engine
 
 app.use(cookieParser());            // Reach you cookies faster
 
 app.use(express.urlencoded({ extended: true }));   // To convert the data in the req body to a string. Has to be before any get route so it doesn't miss data
-
+// ====================== Database =========================
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
 };
 
 const users = {
@@ -42,49 +59,67 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  // console.log(req.cookies["username"])
   const userId = req.cookies["user_id"]
+  if(!userId){
+    return res.status(400).send("Please login !!")
+    
+  }
   const templateVars = {  user:users[userId], urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
 app.get("/register", (req, res) => {
   const userId = req.cookies["user_id"]
-  const templateVars = { user:users[userId], urls: urlDatabase };
+  if(userId) {
+    return res.redirect("/urls")
+  }
+  const templateVars = { user:users[userId] };
   console.log(req.cookies["user_id"])
   res.render("register", templateVars);
 });
 
 app.get("/login", (req,res) => {
   const userId = req.cookies["user_id"]
-  const templateVars = { user:users[userId], urls: urlDatabase };
+  if(userId) {
+    return res.redirect("/urls")
+  }
+  const templateVars = { user:users[userId] };
   res.render("login", templateVars)
 })
 
 app.get("/urls/new", (req, res) => {
   const userId = req.cookies["user_id"]
-  const templateVars = { user:users[userId], urls: urlDatabase };
+  if(!userId) {
+    return res.redirect("/login");
+  }
+  const templateVars = { user:users[userId] };
   res.render("urls_new", templateVars);
 });
 
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id];
+  const longURL = urlDatabase[req.params.id].longURL;
+  if(!longURL) {
+    return res.status(400).send("ID does not exist!!!")
+  }
   res.redirect(longURL);
 });
 
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id
   const userId = req.cookies["user_id"]
-  const templateVars = { user:users[userId], id: req.params.id, longURL: urlDatabase[id] };
+  const templateVars = { user:users[userId], id: req.params.id, longURL: urlDatabase[id].longURL };
   res.render("urls_show", templateVars);
 });
 
 //================================= POST ====================================
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);
+  const userId = req.cookies["user_id"]
+  if(!userId) {
+    return res.status(400).send("Please login!!!")
+  }
   const randomId = randomStringGenerator()
-  urlDatabase[randomId] = req.body.longURL;
+  urlDatabase[randomId] = { longURL:req.body.longURL, userID: userId };
   // console.log(urlDatabase);
   res.redirect(`/urls/${randomId}`);
 });
@@ -129,10 +164,11 @@ app.post("/urls/:id/delete", (req, res) => {                  //deleting a url
 });
 
 app.post("/urls/:id/", (req, res) => {
-  console.log(req.params);
+  // console.log(req.params);
+  const userId = req.cookies["user_id"]
   const id = req.params.id
   const longUrl = req.body.longURL
-  urlDatabase[id] = longUrl;
+  urlDatabase[id] = { longURL:longUrl, userID: userId }
   res.redirect("/urls");
 });
 
