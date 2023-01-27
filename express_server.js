@@ -5,14 +5,6 @@ const PORT = 8080;
 const bcrypt = require("bcryptjs");
 const cookieSession = require("cookie-session");
 // ========================== Functions ======================================
-const randomStringGenerator = () => {
-  let randomString = "";
-  for (let i = 5; i >= 0; i--) {
-    let chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    randomString += chars[Math.floor(Math.random() * 61)];
-  }
-  return randomString;
-};
 
 const urlsForUser = (ID) => {
   const userUrls = {};
@@ -23,6 +15,9 @@ const urlsForUser = (ID) => {
   }console.log("Output:",userUrls) 
   return userUrls;
 }
+
+
+const {getUserByEmail, randomStringGenerator} = require("./helpers")
 
 // ======================== App library settings ============================
 
@@ -65,13 +60,13 @@ const users = {
 
 // =============================== GET =================================
 app.get("/", (req, res) => {
-  return res.redirect("/login");
+  return res.redirect("/login");                      //Homepage
 });
 
 app.get("/urls", (req, res) => {
   const userId = req.session["user_id"]
   if(!userId){
-    return res.status(400).send("<<html><h2>Please login !!</h2></html>")
+    return res.status(400).send("<html><h2>Please login !!</h2></html>")
     
   }
   console.log("user urls are:", urlsForUser(userId));
@@ -145,15 +140,18 @@ app.post("/urls", (req, res) => {
 
 app.post("/register", (req, res) => {
   const {email, password} = req.body 
-  // console.log(req.body);
+  const user = getUserByEmail(email, users)
   if (email === "" || password === "") {
     res.status(400).send(" Email or Password cannot be blank.")
   }
-  for (const id in users) {                      
-    if(email === users[id].email) {
-      res.status(400).send ("Email already registered.")
-    }
+  if (user) {
+    res.status(400).send ("Email already registered.")
   }
+  // for (const id in users) {                      
+  //   if(email === users[id].email) {
+  //     res.status(400).send ("Email already registered.")
+  //   }
+  // }
   const randomUserId = randomStringGenerator()
   users[randomUserId] = { id: randomUserId, email, password: bcrypt.hashSync(password, 10) }
   // console.log(users[randomUserId]);
@@ -166,17 +164,17 @@ app.post("/login", (req, res) => {
   if(!email || !password) {
     return res.status(403).send("Please fill email and password")
   }
-  for (const id in users) {
-    if (email === users[id].email) {
-      if (bcrypt.compareSync(password, users[id].password)) {
-        req.session.user_id = id;
-        console.log("User password is:",users[id].password)
+  const user = getUserByEmail(email, users)
+  console.log("User", user)
+    if(user) {
+      if (bcrypt.compareSync(password, user.password)) {
+        req.session.user_id = user.id;
         return res.redirect("/urls");
       } else {
         res.status(403).send ("Password is incorrect!");
       }
     }
-  }
+ 
   res.status(403).send ("Email adress incorrect!");
 
 });
