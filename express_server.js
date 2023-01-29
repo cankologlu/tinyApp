@@ -3,9 +3,6 @@ const app = express();              // Calling express
 const PORT = 8080;
 const bcrypt = require("bcryptjs");
 const cookieSession = require("cookie-session");
-// ========================== Functions ======================================
-
-
 
 
 const { getUserByEmail, randomStringGenerator, urlsForUser, urlDatabase } = require("./helpers");
@@ -24,7 +21,6 @@ app.use(cookieSession({
 
 app.use(express.urlencoded({ extended: true }));   // To convert the data in the req body to a string. Has to be before any get route so it doesn't miss data
 // ====================== Database =========================
-
 
 const users = {
   horses: {
@@ -47,7 +43,7 @@ app.get("/", (req, res) => {
 app.get("/urls", (req, res) => {
   const userId = req.session["user_id"];
   if (!userId) {
-    return res.send("<a href='/login'>Please login!!!</a>");
+    return res.send("<html><h2><a href='/login'>Please login!!!</a></h2></html>");
   }
   const templateVars = { user: users[userId], urls: urlsForUser(userId) };
   res.render("urls_index", templateVars);       //Passing user data to ejs
@@ -83,7 +79,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/u/:id", (req, res) => {
 
   if (!urlDatabase[req.params.id] || !urlDatabase[req.params.id].longURL) {
-    return res.status(400).send("ID does not exist!!!");
+    return res.status(400).send("<html><h2>ID does not exist!!!</h2></html>");
   }
   const longURL = urlDatabase[req.params.id].longURL;
   if (longURL.startsWith("http://") || longURL.startsWith("https://")) {
@@ -95,11 +91,11 @@ app.get("/u/:id", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const userId = req.session["user_id"];
   if (!userId) {
-    return res.status(400).send("<<html><h2>Please login !!</h2></html>");
+    return res.status(400).send("<html><h2><a href='/login'>Please login!!!</a></h2></html>");
   }
   const id = req.params.id;
   if (!urlsForUser(userId)[id]) {
-    return res.status(400).send("<<html><h2>Url doesn't belong to account!</h2></html>");
+    return res.status(400).send("<html><h2>Url doesn't belong to account!</h2></html>");
   }
 
   const templateVars = { user: users[userId], id: req.params.id, longURL: urlsForUser(userId).longURL };
@@ -111,7 +107,7 @@ app.get("/urls/:id", (req, res) => {
 app.post("/urls", (req, res) => {
   const userId = req.session["user_id"];
   if (!userId) {
-    return res.status(400).send("<a href='/login'>Please login!!!</a>");
+    return res.status(400).send("<html><h2><a href='/login'>Please login!!!</a></h2></html>");
   }
   const randomId = randomStringGenerator();
   urlDatabase[randomId] = { longURL: req.body.longURL, userID: userId };
@@ -122,10 +118,10 @@ app.post("/register", (req, res) => {
   const { email, password } = req.body;
   const user = getUserByEmail(email, users);
   if (email === "" || password === "") {
-    return res.status(400).send(" Email or Password cannot be blank.");
+    return res.status(400).send("<html><h2>Email or Password cannot be blank.</h2></html>");
   }
   if (user) {
-    return res.status(400).send("Email already registered.");
+    return res.status(400).send("<html><h2>Email already registered.</h2></html>");
   }
   const randomUserId = randomStringGenerator();
   users[randomUserId] = { id: randomUserId, email, password: bcrypt.hashSync(password, 10) };
@@ -136,7 +132,7 @@ app.post("/register", (req, res) => {
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(403).send("Please fill email and password");
+    return res.status(403).send("<html><h2>Please fill email and password</h2></html>");
   }
   const user = getUserByEmail(email, users);
   if (user) {
@@ -144,22 +140,22 @@ app.post("/login", (req, res) => {
       req.session.user_id = user.id;
       return res.redirect("/urls");
     } else {
-      return res.status(403).send("Password is incorrect!");
+      return res.status(403).send("<html><h2>Password is incorrect!</h2></html>");
     }
   }
 
-  return res.status(403).send("Email adress incorrect!");
+  return res.status(403).send("<html><h2>Email adress incorrect!</h2></html>");
 
 });
 
 app.post("/urls/:id/delete", (req, res) => {                        //DELETE
   const userId = req.session["user_id"];
   if (!userId) {
-    return res.status(400).send("<<html><h2>Please login !!</h2></html>");
+    return res.status(400).send("<html><h2><a href='/login'>Please login!!!</a></h2></html>");
   }
   const id = req.params.id;
   if (!urlsForUser(userId)[id]) {
-    return res.status(400).send("<<html><h2>Url not found!</h2></html>");
+    return res.status(400).send("<html><h2>Url not found!</h2></html>");
   }
   delete urlDatabase[id];
   return res.redirect("/urls");
@@ -168,7 +164,7 @@ app.post("/urls/:id/delete", (req, res) => {                        //DELETE
 app.post("/urls/:id", (req, res) => {                                  // EDIT
   const userId = req.session["user_id"];
   if (!userId) {
-    return res.status(400).send("<<html><h2>Please login !!</h2></html>");
+    return res.status(400).send("<html><h2><a href='/login'>Please login!!!</a></h2></html>");
   }
   const id = req.params.id;
   if (!urlsForUser(userId)[id]) {
