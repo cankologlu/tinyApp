@@ -8,7 +8,7 @@ const cookieSession = require("cookie-session");
 
 
 
-const { getUserByEmail, randomStringGenerator, urlsForUser, urlDatabase } = require("./helpers")
+const { getUserByEmail, randomStringGenerator, urlsForUser, urlDatabase } = require("./helpers");
 
 // ======================== App library settings ============================
 
@@ -20,7 +20,7 @@ app.use(cookieSession({
 
   // Cookie Options
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
-}))
+}));
 
 app.use(express.urlencoded({ extended: true }));   // To convert the data in the req body to a string. Has to be before any get route so it doesn't miss data
 // ====================== Database =========================
@@ -45,9 +45,9 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const userId = req.session["user_id"]
+  const userId = req.session["user_id"];
   if (!userId) {
-    return res.send("<a href='/login'>Please login!!!</a>")
+    return res.send("<a href='/login'>Please login!!!</a>");
   }
   const templateVars = { user: users[userId], urls: urlsForUser(userId) };
   res.render("urls_index", templateVars);       //Passing user data to ejs
@@ -69,7 +69,7 @@ app.get("/login", (req, res) => {
   }
   const templateVars = { user: users[userId] };
   res.render("login", templateVars);
-})
+});
 
 app.get("/urls/new", (req, res) => {
   const userId = req.session["user_id"];
@@ -81,25 +81,25 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
-  
+
   if (!urlDatabase[req.params.id] || !urlDatabase[req.params.id].longURL) {
-    return res.status(400).send("ID does not exist!!!")
+    return res.status(400).send("ID does not exist!!!");
   }
   const longURL = urlDatabase[req.params.id].longURL;
-  if(longURL.startsWith("http://") || longURL.startsWith("https://")) {
+  if (longURL.startsWith("http://") || longURL.startsWith("https://")) {
     return res.redirect(longURL);
   }
   res.redirect("http://" + longURL);
 });
 
 app.get("/urls/:id", (req, res) => {
-  const userId = req.session["user_id"]
+  const userId = req.session["user_id"];
   if (!userId) {
-    return res.status(400).send("<<html><h2>Please login !!</h2></html>")
+    return res.status(400).send("<<html><h2>Please login !!</h2></html>");
   }
-  const id = req.params.id
+  const id = req.params.id;
   if (!urlsForUser(userId)[id]) {
-    return res.status(400).send("<<html><h2>Url doesn't belong to account!</h2></html>")
+    return res.status(400).send("<<html><h2>Url doesn't belong to account!</h2></html>");
   }
 
   const templateVars = { user: users[userId], id: req.params.id, longURL: urlsForUser(userId).longURL };
@@ -109,7 +109,7 @@ app.get("/urls/:id", (req, res) => {
 //================================= POST ====================================
 
 app.post("/urls", (req, res) => {
-  const userId = req.session["user_id"]
+  const userId = req.session["user_id"];
   if (!userId) {
     return res.status(400).send("<a href='/login'>Please login!!!</a>");
   }
@@ -119,16 +119,16 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  const { email, password } = req.body
+  const { email, password } = req.body;
   const user = getUserByEmail(email, users);
   if (email === "" || password === "") {
-   return res.status(400).send(" Email or Password cannot be blank.");
+    return res.status(400).send(" Email or Password cannot be blank.");
   }
   if (user) {
-   return res.status(400).send("Email already registered.");
+    return res.status(400).send("Email already registered.");
   }
-  const randomUserId = randomStringGenerator()
-  users[randomUserId] = { id: randomUserId, email, password: bcrypt.hashSync(password, 10) }
+  const randomUserId = randomStringGenerator();
+  users[randomUserId] = { id: randomUserId, email, password: bcrypt.hashSync(password, 10) };
   req.session.user_id = randomUserId;
   return res.redirect(`/urls`);
 });
@@ -157,7 +157,7 @@ app.post("/urls/:id/delete", (req, res) => {                        //DELETE
   if (!userId) {
     return res.status(400).send("<<html><h2>Please login !!</h2></html>");
   }
-  const id = req.params.id
+  const id = req.params.id;
   if (!urlsForUser(userId)[id]) {
     return res.status(400).send("<<html><h2>Url not found!</h2></html>");
   }
@@ -170,12 +170,12 @@ app.post("/urls/:id", (req, res) => {                                  // EDIT
   if (!userId) {
     return res.status(400).send("<<html><h2>Please login !!</h2></html>");
   }
-  const id = req.params.id
+  const id = req.params.id;
   if (!urlsForUser(userId)[id]) {
     return res.status(400).send("<<html><h2>Url not found!</h2></html>");
   }
   const longUrl = req.body.longURL;
-  urlDatabase[id] = { longURL: longUrl, userID: userId }
+  urlDatabase[id] = { longURL: longUrl, userID: userId };
   return res.redirect("/urls");
 });
 
