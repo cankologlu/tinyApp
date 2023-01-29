@@ -85,8 +85,8 @@ app.get("/u/:id", (req, res) => {
     return res.status(400).send("<html><h2>ID does not exist!!!</h2></html>");
   }
   const longURL = urlDatabase[req.params.id].longURL;
-  if(userId !== urlDatabase[req.params.id].userID) {
-    return res.status(400).send("<html><h2>Shot url doesn't belong to account!</h2></html>")
+  if (userId !== urlDatabase[req.params.id].userID) {
+    return res.status(400).send("<html><h2>Short url doesn't belong to account!</h2></html>");
   }
   if (longURL.startsWith("http://") || longURL.startsWith("https://")) {
     return res.redirect(longURL);
