@@ -24,7 +24,7 @@ const urlDatabase = {
   }
 };
 
-const getUserByEmail = (email, database) => {
+const getUserByEmail = (email, database) => {     //Takes in email address and database returns user object
   for (const id in database) {
     if (email === database[id].email) { 
       return database[id];
@@ -32,7 +32,7 @@ const getUserByEmail = (email, database) => {
   } return null;
 }
 
-const randomStringGenerator = () => {
+const randomStringGenerator = () => {                 //Generates a six digit alpahnumeric string
   let randomString = "";
   for (let i = 5; i >= 0; i--) {
     let chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -42,7 +42,7 @@ const randomStringGenerator = () => {
 };
 
 
-const urlsForUser = (ID) => {
+const urlsForUser = (ID) => {                           //Takes in a string and searches the urldatabase to find matching id and returns an object with the urls related to that id 
   const userUrls = {};
   for (const id in urlDatabase) {
     if (urlDatabase[id].userID === ID) {
