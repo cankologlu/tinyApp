@@ -101,11 +101,14 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id].longURL;
-
+  console.log(longURL);
   if (!longURL) {
     return res.status(400).send("ID does not exist!!!")
   }
-  res.redirect(longURL);
+  if(longURL.startsWith("http://") || longURL.startsWith("https://")) {
+    return res.redirect(longURL);
+  }
+  res.redirect("http://" + longURL);
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -127,7 +130,7 @@ app.get("/urls/:id", (req, res) => {
 app.post("/urls", (req, res) => {
   const userId = req.session["user_id"]
   if (!userId) {
-    return res.status(400).send("Please login!!!");
+    return res.status(400).send("<a href='/login'>Please login!!!</a>");
   }
   const randomId = randomStringGenerator();
   urlDatabase[randomId] = { longURL: req.body.longURL, userID: userId };
@@ -138,10 +141,10 @@ app.post("/register", (req, res) => {
   const { email, password } = req.body
   const user = getUserByEmail(email, users);
   if (email === "" || password === "") {
-    res.status(400).send(" Email or Password cannot be blank.");
+   return res.status(400).send(" Email or Password cannot be blank.");
   }
   if (user) {
-    res.status(400).send("Email already registered.");
+   return res.status(400).send("Email already registered.");
   }
   const randomUserId = randomStringGenerator()
   users[randomUserId] = { id: randomUserId, email, password: bcrypt.hashSync(password, 10) }
@@ -160,11 +163,11 @@ app.post("/login", (req, res) => {
       req.session.user_id = user.id;
       return res.redirect("/urls");
     } else {
-      res.status(403).send("Password is incorrect!");
+      return res.status(403).send("Password is incorrect!");
     }
   }
 
-  res.status(403).send("Email adress incorrect!");
+  return res.status(403).send("Email adress incorrect!");
 
 });
 
@@ -192,7 +195,7 @@ app.post("/urls/:id", (req, res) => {                                  // EDIT
   }
   const longUrl = req.body.longURL;
   urlDatabase[id] = { longURL: longUrl, userID: userId }
-  res.redirect("/urls");
+  return res.redirect("/urls");
 });
 
 
@@ -235,26 +238,3 @@ app.listen(PORT, () => {                              // Channel open!
 
 
 
-
-
-// app.get("/hello", (req, res) => {
-//   const templateVars = {greeting: "Hello there!"}
-//   res.render("hello_world", templateVars);
-// });
-
-// app.get("/urls.json", (req, res) => {
-//   res.json(urlDatabase);
-// });
-
-
-// app.get("/catoz", (req, res) => {
-//   res.send("catz?");
-// });
-// app.get("/set", (req,res) => {
-//   const a = 1;
-//   res.send(`a = ${a}`);
-// });
-// app.get("/fetch", (req,res) => {
-//   const a = "<html><body><b>epskenik</b></body></html>";
-//   res.send(`a = ${a}`);
-// });
