@@ -1,29 +1,19 @@
 const express = require("express"); // Importing express library
 const app = express();              // Calling express
 const PORT = 8080;
-// const cookieParser = require("cookie-parser"); //turns it into string
 const bcrypt = require("bcryptjs");
 const cookieSession = require("cookie-session");
 // ========================== Functions ======================================
 
-const urlsForUser = (ID) => {
-  const userUrls = {};
-  for (const id in urlDatabase) {
-    if (urlDatabase[id].userID === ID) {
-      userUrls[id] = urlDatabase[id];
-    }
-  }
-  return userUrls;
-}
 
 
-const { getUserByEmail, randomStringGenerator } = require("./helpers")
+
+const { getUserByEmail, randomStringGenerator, urlsForUser, urlDatabase } = require("./helpers")
 
 // ======================== App library settings ============================
 
 app.set("view engine", "ejs");      // Setting ejs as the templating engine
 
-// app.use(cookieParser());            // Reach you cookies faster
 app.use(cookieSession({
   name: 'session',
   keys: ["my common senses are tingling", "and one final cookie to rule them all"],
@@ -34,16 +24,7 @@ app.use(cookieSession({
 
 app.use(express.urlencoded({ extended: true }));   // To convert the data in the req body to a string. Has to be before any get route so it doesn't miss data
 // ====================== Database =========================
-const urlDatabase = {
-  b6UTxQ: {
-    longURL: "https://www.tsn.ca",
-    userID: "aJ48lW",
-  },
-  i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "aJ48lW",
-  }
-};
+
 
 const users = {
   horses: {
@@ -66,7 +47,7 @@ app.get("/", (req, res) => {
 app.get("/urls", (req, res) => {
   const userId = req.session["user_id"]
   if (!userId) {
-    return res.redirect("/login")
+    return res.send("<a href='/login'>Please login!!!</a>")
   }
   const templateVars = { user: users[userId], urls: urlsForUser(userId) };
   res.render("urls_index", templateVars);       //Passing user data to ejs
@@ -100,11 +81,11 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id].longURL;
-  console.log(longURL);
-  if (!longURL) {
+  
+  if (!urlDatabase[req.params.id] || !urlDatabase[req.params.id].longURL) {
     return res.status(400).send("ID does not exist!!!")
   }
+  const longURL = urlDatabase[req.params.id].longURL;
   if(longURL.startsWith("http://") || longURL.startsWith("https://")) {
     return res.redirect(longURL);
   }
@@ -209,30 +190,6 @@ app.post("/logout", (req, res) => {
 app.listen(PORT, () => {                              // Channel open!
   console.log(`Listening on port ${PORT}!`);
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

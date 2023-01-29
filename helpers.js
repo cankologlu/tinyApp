@@ -13,7 +13,6 @@ const users = {
   }
 };
 
-
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -24,7 +23,6 @@ const urlDatabase = {
     userID: "aJ48lW",
   }
 };
-
 
 const getUserByEmail = (email, database) => {
   for (const id in database) {
@@ -44,7 +42,15 @@ const randomStringGenerator = () => {
 };
 
 
+const urlsForUser = (ID) => {
+  const userUrls = {};
+  for (const id in urlDatabase) {
+    if (urlDatabase[id].userID === ID) {
+      userUrls[id] = urlDatabase[id];
+    }
+  }
+  return userUrls;
+}
 
 
-
-module.exports = {getUserByEmail, randomStringGenerator} 
+module.exports = {getUserByEmail, randomStringGenerator, urlsForUser, urlDatabase} 
